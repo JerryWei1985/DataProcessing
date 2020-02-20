@@ -2,7 +2,7 @@
 #-*- coding:utf-8 -*-
 
 import argparse
-from pylib.process import *
+from TN.pylib.process import *
 
 def main():
     pass
