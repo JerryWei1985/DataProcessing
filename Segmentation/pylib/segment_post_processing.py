@@ -80,7 +80,7 @@ class PostProcessor:
             if repMatch:
                 matchStr = repMatch.group(0)
                 replaceDic = self.mappingDic[matchStr]
-                tmp = self.mappingDic[matchStr].sub(replaceDic[0], replaceDic[1])
+                tmp = replaceDic[1].sub(replaceDic[0], tmp)
             else:
                 break
         return tmp
@@ -111,7 +111,7 @@ class PostProcessor:
                         output.write(
                             self.whiteCharRegex.sub(
                                 ' ', self.englishRegex.sub(
-                                    self.ProcessEngMatch,self.ProcessMapping(line)
+                                    self.ProcessEngMatch, self.ProcessMapping(line)
                                 )
                             )
                         )
