@@ -89,7 +89,7 @@ class SubscriptProcesser(object):
         try:
             str_data = byte_data.decode(encoding)
         except UnicodeDecodeError:
-            str_data = byte_data.decode('utf-8')
+            str_data = byte_data.decode('gb18030')
         is_start = True
         is_empty = True
         for line in str_data.split('\n'):
@@ -116,21 +116,29 @@ class SubscriptProcesser(object):
     def extract_ass(self):
         chs_list = []
         eng_list = []
-        with open(self.data_path) as in_data:
-            for line in in_data:
-                tmp_line = line.strip()
-                if not tmp_line:
-                    continue
-                elif tmp_line.startswith('Dialogue'):
-                    cols = tmp_line.split(':')[1].strip().split(',')
-                    text = cols[9:]
-                    text = self.noise_re.sub('', text)
-                    tmp_text = text.split(r'\N')
-                    for item in tmp_text:
-                        if self.eng_re.match(item):
-                            eng_list.append(item)
-                        else:
-                            chs_list.append(item)
+        byte_data = SubscriptProcesser.read_text(self.data_path)
+        dicts = chardet.detect(byte_data)
+        encoding = dicts['encoding']
+        if dicts['confidence'] < 0.7:
+            encoding = 'utf-8'
+        try:
+            str_data = byte_data.decode(encoding)
+        except UnicodeDecodeError:
+            str_data = byte_data.decode('gb18030')
+        for line in str_data.split('\n'):
+            tmp_line = line.strip()
+            if not tmp_line:
+                continue
+            elif tmp_line.startswith('Dialogue'):
+                cols = tmp_line.split(':')[1].strip().split(',')
+                text = cols[9:]
+                text = self.noise_re.sub('', text)
+                tmp_text = text.split(r'\N')
+                for item in tmp_text:
+                    if self.eng_re.match(item):
+                        eng_list.append(item)
+                    else:
+                        chs_list.append(item)
         return chs_list, eng_list
 
     def extract_content(self):
