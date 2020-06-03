@@ -5,6 +5,7 @@ import argparse
 import os
 import re
 import sys
+import chardet
 from enum import Enum, unique
 
 
@@ -73,20 +74,26 @@ class SubscriptProcesser(object):
         else:
             return f_body
 
+    @classmethod
+    def decode_bytes(cls, bytes_data):
+        pass
+
     def extract_srt(self):
         chs_list = []
         eng_list = []
         byte_data = SubscriptProcesser.read_text(self.data_path)
+        dicts = chardet.detect(byte_data)
+        encoding = dicts['encoding']
+        if dicts['confidence'] < 0.7:
+            encoding = 'utf-8'
         try:
-            str_data = byte_data.encode('utf-8')
+            str_data = byte_data.decode(encoding)
         except UnicodeDecodeError:
-            str_data = byte_data.encode('gbk')
+            str_data = byte_data.decode('utf-8')
         is_start = True
         is_empty = True
         for line in str_data.split('\n'):
             tmp_line = line.strip()
-            if is_start:
-                print(tmp_line)
             if not tmp_line:
                 is_empty = True
                 continue
