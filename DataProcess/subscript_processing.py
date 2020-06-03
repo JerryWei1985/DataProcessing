@@ -131,7 +131,7 @@ class SubscriptProcesser(object):
                 continue
             elif tmp_line.startswith('Dialogue'):
                 cols = tmp_line.split(':')[1].strip().split(',')
-                text = cols[9:]
+                text = ','.join(cols[9:])
                 text = self.noise_re.sub('', text)
                 tmp_text = text.split(r'\N')
                 for item in tmp_text:
