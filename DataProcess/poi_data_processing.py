@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 #-*- coding:utf-8 -*-
 
-import argparse, sys, os
+import argparse
+import os
+import sys
 
-from pylib.POIAreas import *
+from DataProcessing.DataProcess.pylib.POIAreas import ChineseAreas
 
 class POI(object):
     def __init__(self, inputs, separator=['\t']):
