@@ -76,20 +76,21 @@ class SubscriptProcesser(object):
 
     @classmethod
     def decode_bytes(cls, bytes_data):
-        pass
+        dicts = chardet.detect(bytes_data)
+        encoding = 'utf-8'
+        if dicts['confidence'] > 0.7:
+            encoding = dicts['encoding']
+        try:
+            str_data = bytes_data.decode(encoding)
+        except UnicodeDecodeError:
+            str_data = bytes_data.decode('gb18030')
+        return str_data
 
     def extract_srt(self):
         chs_list = []
         eng_list = []
-        byte_data = SubscriptProcesser.read_text(self.data_path)
-        dicts = chardet.detect(byte_data)
-        encoding = dicts['encoding']
-        if dicts['confidence'] < 0.7:
-            encoding = 'utf-8'
-        try:
-            str_data = byte_data.decode(encoding)
-        except UnicodeDecodeError:
-            str_data = byte_data.decode('gb18030')
+        bytes_data = SubscriptProcesser.read_text(self.data_path)
+        str_data = SubscriptProcesser.decode_bytes(bytes_data)
         is_start = True
         is_empty = True
         for line in str_data.split('\n'):
@@ -116,21 +117,14 @@ class SubscriptProcesser(object):
     def extract_ass(self):
         chs_list = []
         eng_list = []
-        byte_data = SubscriptProcesser.read_text(self.data_path)
-        dicts = chardet.detect(byte_data)
-        encoding = dicts['encoding']
-        if dicts['confidence'] < 0.7:
-            encoding = 'utf-8'
-        try:
-            str_data = byte_data.decode(encoding)
-        except UnicodeDecodeError:
-            str_data = byte_data.decode('gb18030')
+        bytes_data = SubscriptProcesser.read_text(self.data_path)
+        str_data = SubscriptProcesser.decode_bytes(bytes_data)
         for line in str_data.split('\n'):
             tmp_line = line.strip()
             if not tmp_line:
                 continue
             elif tmp_line.startswith('Dialogue'):
-                cols = tmp_line.split(':')[1].strip().split(',')
+                cols = tmp_line.split(',')
                 text = ','.join(cols[9:])
                 text = self.noise_re.sub('', text)
                 tmp_text = text.split(r'\N')
