@@ -63,39 +63,47 @@ class SubscriptProcesser(object):
 
     @classmethod
     def read_text(cls, data_path):
-        BOM = b'\xef\xbb\xbf'
-        existBOM = lambda s: True if s == BOM else False
+        bom = b'\xef\xbb\xbf'
+        exist_bom = lambda s: True if s == bom else False
         f = open(data_path, 'rb')
-        if existBOM(f.read(3)):
-            pass
+        f_body = f.read()
+        f.close()
+        if exist_bom(f_body[:3]):
+            return f_body[3:]
+        else:
+            return f_body
 
     def extract_srt(self):
         chs_list = []
         eng_list = []
-        with open(self.data_path) as in_data:
-            is_start = True
-            is_empty = True
-            for line in in_data:
-                tmp_line = line.strip()
-                if is_start:
-                    print(tmp_line)
-                if not tmp_line:
-                    is_empty = True
-                    continue
-                elif (self.number_re.match(tmp_line) and
-                      (is_start or is_empty)):
-                    is_empty = False
-                    continue
-                elif (self.time_duration_re.match(tmp_line)):
-                    is_empty = False
-                    continue
-                elif self.eng_re.match(tmp_line):
-                    is_empty = False
-                    eng_list.append(tmp_line)
-                else:
-                    is_empty = False
-                    chs_list.append(tmp_line)
-                is_start = False
+        byte_data = SubscriptProcesser.read_text(self.data_path)
+        try:
+            str_data = byte_data.encode('utf-8')
+        except UnicodeDecodeError:
+            str_data = byte_data.encode('gbk')
+        is_start = True
+        is_empty = True
+        for line in str_data.split('\n'):
+            tmp_line = line.strip()
+            if is_start:
+                print(tmp_line)
+            if not tmp_line:
+                is_empty = True
+                continue
+            elif (self.number_re.match(tmp_line) and
+                  (is_start or is_empty)):
+                is_empty = False
+                continue
+            elif (self.time_duration_re.match(tmp_line)):
+                is_empty = False
+                continue
+            elif self.eng_re.match(tmp_line):
+                is_empty = False
+                eng_list.append(tmp_line)
+            else:
+                is_empty = False
+                chs_list.append(tmp_line)
+            is_start = False
         return chs_list, eng_list
 
     def extract_ass(self):
